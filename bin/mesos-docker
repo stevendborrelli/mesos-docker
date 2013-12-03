@@ -234,7 +234,11 @@ def principal_port(image):
         config = parsed['Config']
     if 'config' in parsed and config is None:
         config = parsed['config']
-    port   = config['PortSpecs'][0].split(':')[-1] if config else None
+
+    if config and config['PortSpecs']:
+        port = config['PortSpecs'][0].split(':')[-1]
+    else:
+        port = None 
     return port
 
 def pull(image):
