@@ -110,6 +110,7 @@ class DockerExecutor(mesos.Executor):
             exit(2)
         self.task   = task
         self.driver = driver
+        log.info(os.environ)
         log.info('Task is: %s' % task.task_id.value)
         try:
             self.data = json.loads(task.data) if task.data else {}
@@ -218,8 +219,10 @@ def run_with_env_PORT(image, args=[], env={},
     for k, v in env.items():
         cmd += [ '-e', '%s=%s' % (k,v) ]
     port = principal_port(image)
-    if port and 'PORT' in os.environ:
-        port_mapping   = os.environ['PORT'] + ":" + str(int(port))
+    log.info("port %s" % port)
+    log.info("PORTS %s" % os.environ['PORTS'])
+    if port and 'PORTS' in os.environ:
+        port_mapping   = os.environ['PORTS'] + ":" + str(int(port))
         cmd           += [ '-p', port_mapping ]
     argv = ['docker'] + cmd + [ image ] + [ arg for arg in args ]
     log.info('ARGV ' + ' '.join(str(arg) for arg in argv))
@@ -235,8 +238,8 @@ def principal_port(image):
     if 'config' in parsed and config is None:
         config = parsed['config']
 
-    if config and config['PortSpecs']:
-        port = config['PortSpecs'][0].split(':')[-1]
+    if config and config['ExposedPorts']:
+        port = config['ExposedPorts'].keys()[0].split('/')[0]
     else:
         port = None 
     return port
